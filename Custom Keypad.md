@@ -126,7 +126,11 @@ TBR -> | **Touch Target Width** | ~50px (Cramped) | **~100px+ (Standard Thumb Zo
     And a haptic feedback or visual cue should indicate the limit has been reached
 
 Scenario: Single bet -> Open betslip -> Open keypad on stake input focus (always on)
-  Given
+  Given the user has 1 selection in the betslip
+  When the user opens the betslip
+  Then the stake field should get focus and the keypad should be displayed
+
+
 
 Scenario: Multiple bet -> Open betslip -> Open keypad on stake input focus
 
