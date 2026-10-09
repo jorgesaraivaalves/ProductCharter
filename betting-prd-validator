@@ -1,0 +1,88 @@
+# Betting PRD & Acceptance Criteria Validator
+
+A specialized auditing skill for sports betting Product Managers and QA engineers to stress-test PRDs, user stories, and acceptance criteria against critical industry requirements and edge cases.
+
+## When to Use
+
+- When reviewing or writing a PRD, user story, or functional spec for sports betting or iGaming features (betslip, in-play betting, cash out, bet placement, bet lifecycle, settlement).
+- When validating Acceptance Criteria (AC) and Definition of Ready (DoR) prior to engineering grooming/sprint planning.
+- When generating missing Gherkin scenarios covering transactional integrity, regulatory compliance, and market volatility.
+
+## Audit Workflow
+
+When evaluating requirements, execute the following 4-step process:
+
+### Step 1: Deconstruct and Classify Feature Scope
+Categorize the feature into its core functional domains:
+- **Transactional Hot-Path**: Bet placement, cash out execution, balance deduction/crediting.
+- **Trading & Market Volatility**: Live odds updates, in-play acceptance delay, market suspensions, cash out quote TTL.
+- **Combinatorics & Betslip Logic**: Accumulators/parlays, Same Game Parlays (SGP / Bet Builder), system bets (Trixie, Yankee).
+- **Post-Placement & Settlement**: Resulting, voiding, dead heats, Rule 4 deductions, VAR reversals.
+- **Regulatory & Player Safety**: Stake/deposit limits, reality checks, local tax withholding.
+
+### Step 2: Evaluate Against the 5 Betting Pillars
+Audit the input against each pillar using a **Pass / Warning / Fail** rating:
+
+1. **Pillar A: Idempotency & Ledger Integrity**
+   - Unique idempotency key (`UUID v4` + timestamp) required on all financial actions.
+   - Wallet deduction sequence explicitly ordered (e.g., Free Bet token -> Bonus Balance -> Real Money).
+   - Strict handling for timeouts (t > 10s): must query transaction status, never auto-retry ledger transactions blindly.
+   - Network drop recovery: client state reconciliation upon reconnection.
+
+2. **Pillar B: In-Play Latency & Odds Slippage**
+   - User slippage preference accounted for (Accept Higher Odds Only, Accept Any Odds Change, Never Accept Changes).
+   - In-play acceptance buffer (1.0-5.0s countdown) defined with non-cancelable UI progress state.
+   - Market suspension behavior during submission (retaining valid legs while isolating suspended ones).
+   - Cash out quote validity window (TTL) and rejection codes for price drifts or VAR events.
+
+3. **Pillar C: Leg Contingencies & Combinatorics**
+   - Detection and explanation of related contingencies / mutually exclusive outcomes in SGPs.
+   - Accumulator reduction logic for voided, cancelled, or abandoned matches ($N \rightarrow N-1$ recalculation).
+   - Permutation structuring and max payout caps accurately documented.
+
+4. **Pillar D: Settlement & Market Integrity**
+   - Dead heat calculations (fractional stake reductions) and Rule 4 deduction bands.
+   - VAR-driven post-goal or post-penalty review reversals handled gracefully in open/settled bets.
+   - Source of truth for settlement results and dispute resolution handling.
+
+5. **Pillar E: Responsible Gambling (RG) & Regulatory Compliance**
+   - Deposit, loss, and 24h/7d stake limits checked prior to enabling bet submission.
+   - Jurisdictional tax deductions (e.g., stake withholding vs. gross winnings tax) calculated in potential returns.
+   - Session duration limits and reality-check overlays that do not corrupt in-flight transactions.
+
+### Step 3: Identify Gaps & Ambiguities
+Provide a bulleted gap analysis highlighting specific unhandled scenarios, technical ambiguities, and edge cases that will cause issues during development or QA testing.
+
+### Step 4: Generate Concrete Gherkin Scenarios
+For every high-severity or medium-severity gap identified, produce ready-to-use Gherkin scenarios (`Given / When / Then / Examples`) directly formatted for Jira or Confluence.
+
+## Output Format
+
+Structure all audit evaluations as follows:
+
+```markdown
+### PRD Audit Scorecard: [Feature Name]
+- **Pillar A (Idempotency & Ledger):** [Pass / Warning / Fail] - [Brief justification]
+- **Pillar B (Trading & Slippage):** [Pass / Warning / Fail] - [Brief justification]
+- **Pillar C (Leg Contingencies):** [Pass / Warning / Fail] - [Brief justification]
+- **Pillar D (Settlement Edge Cases):** [Pass / Warning / Fail] - [Brief justification]
+- **Pillar E (Compliance & RG):** [Pass / Warning / Fail] - [Brief justification]
+
+### Critical Gaps & Missing Edge Cases
+- **[Area]:** [Specific unhandled risk or edge case]
+
+### Recommended Acceptance Criteria (Gherkin)
+```gherkin
+Feature: ...
+  Scenario: ...
+    Given ...
+    When ...
+    Then ...
+```
+```
+
+## Gotchas & Verification Rules
+
+- Never accept vague statements like "system handles errors gracefully." Always demand exact HTTP/WebSocket codes and UI recovery states.
+- Ensure potential payout formulas clearly show whether the initial stake is returned (standard betting) or excluded (free bet tokens).
+- Distinguish between client optimistic UI updates and backend ledger confirmations.
