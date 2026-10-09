@@ -73,7 +73,60 @@ TBR -> | **Touch Target Width** | ~50px (Cramped) | **~100px+ (Standard Thumb Zo
 ## 6. Executable Acceptance Criteria / Gherkin Acceptance Scenarios
  ```gherkin
 
-Scenario: Single bet -> Open betslip -> Open keypad on stake input focus (alwauys on)
+  Scenario Outline: User enters a valid stake using the numeric grid
+    Given the user has an active betslip with an empty stake field
+    When the user taps the sequence "<input>" on the custom keypad
+    Then the stake field should display "<output>"
+    And the potential returns should update based on "<output>"
+    Examples:
+      | input | output |
+      | 1,0  | 10    |
+      | 5, ., 5 | 5.5  |
+      | ., 7, 5 | 0.75 |
+      | 0, 5    | 5    |
+
+  Scenario: User attempts to enter more than two decimal places (This is not the current behaviour)
+    Given the stake field currently displays "10.55"
+    When the user taps "5" on the keypad
+    Then the stake field should remain "10.55"
+    And no further digits should be accepted until a backspace is used  
+
+  Scenario: User attempts to enter more than two decimal places (Current behaviour)
+    Given the stake field currently displays "10.55"
+    When the user taps "5" on the keypad
+    Then the stake field shows "10.555" and an alert message is shown "The stake should be a multiple of <currency symbol>0.01"
+
+
+  Scenario: User corrects a stake entry
+    Given the stake field currently displays "125"
+    When the user taps the "⌫" key once
+    Then the stake field should display "12"
+    When the user performs a long-press (>= 800ms) on the "⌫" key
+    Then the stake field should be cleared (empty state)
+    And the "Place Bet" button should be disabled
+
+  Scenario: User uses quick-stake chips to increment stake
+    Given the stake field currently displays "+ €5" or "+ £5"
+    When the user taps the "+ €10" or "+ £10" quick-stake chip
+    Then the stake field should display "€15" or £15"
+    And the keypad should remain visible for further adjustments
+
+  Scenario: Market suspends while user is typing
+    Given the user is entering a stake on the keypad
+    When the underlying market moves to a "Suspended" or "Closed" state
+    Then the keypad should remain active
+    But the "Place Bet" button below the keypad must transition to a disabled "Suspended" or "Closed"  state
+    And the user should be able to continue editing the stake
+
+  Scenario: User exceeds the maximum allowed character length
+    Given the maximum stake character limit is set to 9 digits
+    And the stake field currently displays "999999999"
+    When the user taps any numeric key
+    Then the input should be ignored
+    And a haptic feedback or visual cue should indicate the limit has been reached
+
+Scenario: Single bet -> Open betslip -> Open keypad on stake input focus (always on)
+  Given
 
 Scenario: Multiple bet -> Open betslip -> Open keypad on stake input focus
 
