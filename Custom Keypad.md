@@ -101,7 +101,7 @@ TBR -> | **Touch Target Width** | ~50px (Cramped) | **~100px+ (Standard Thumb Zo
     Given the stake field currently displays "125"
     When the user taps the "⌫" key once
     Then the stake field should display "12"
-    When the user performs a long-press (>= 800ms) on the "⌫" key
+    When the user performs a long-press (>= 900ms) on the "⌫" key
     Then the stake field should be cleared (empty state)
     And the "Place Bet" button should be disabled
 
