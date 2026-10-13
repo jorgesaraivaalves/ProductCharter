@@ -103,9 +103,9 @@ TBR -> | **Touch Target Width** | ~50px (Cramped) | **~100px+ (Standard Thumb Zo
 
   Scenario: User corrects a stake entry
     Given the stake field currently displays "125"
-    When the user taps the "⌫" key once
+    When the user taps the "⌫" (backspace) key once
     Then the stake field should display "12"
-    When the user performs a long-press (>= 900ms) on the "⌫" key
+    When the user performs a long-press (>= 900ms) on the "⌫" (backspace) key
     Then the stake field should be cleared (empty state)
     And the "Place Bet" button should be disabled
 
@@ -129,38 +129,46 @@ TBR -> | **Touch Target Width** | ~50px (Cramped) | **~100px+ (Standard Thumb Zo
     Then the input should be ignored
     And a haptic feedback or visual cue should indicate the limit has been reached
 
-Scenario: Single bet -> Open betslip -> Open keypad on stake input focus (always on)
-  Given the user has 1 selection in the betslip
+Scenario: Stake field focus triggers keypad display
+  Given the user has 1 single selection in the betslip
   When the user opens the betslip
-  Then the stake field should get focus and the keypad should be displayed
+  Then the stake field should receive focus
+  And the numeric keypad should be displayed
 
+Scenario: Stake field focus shows keypad on direct interaction
+  Given the betslip is open
+  When the user taps the stake field
+  Then the stake field should receive focus
+  And the numeric keypad should be displayed
 
+Scenario: Keypad dismissed when stake field loses focus
+  Given the betslip is open
+  And the numeric keypad is displayed
+  When the user taps outside the stake field
+  Then the stake field should lose focus
+  And the numeric keypad should be hidden
 
-Scenario: Multiple bet -> Open betslip -> Open keypad on stake input focus
+Scenario: Keypad remains visible during stake input
+  Given the betslip is open
+  And the stake field has focus
+  And the numeric keypad is displayed
+  When the user enters numeric input via the keypad
+  Then the stake field should retain focus
+  And the numeric keypad should remain displayed
 
-Scenario: Delete selection from multiple
+Scenario: Stake field regains focus when selection is removed
+  Given the betslip is open
+  And the user has multiple selections
+  When the user removes a selection from the betslip
+  Then the remaining stake field should receive focus
+  And the numeric keypad should be displayed
 
-Scenario: Single bet -> Open betslip -> Open keypad on stake input focus
-
-Scenario: Betbuilder bet -> Open betslip -> Open keypad on stake input focus
-
-
-Scenario: Single Stake field gets focus -> open keypad
-  Single stake field in view
-
-Scenario: Multiple Stake field in view gets focus -> open keypad
-  Adjust betslip viewport
-
-Scenario: Stake field lost focus -> close keypad
-
-Scenario: betslip upsell -> add selection
-
-Scenario: tabbed betslip navigation
-
-Scenario: quick stake
-
-Scenario: Eac
-
+Scenario: Betslip adjusts to keep keypad in view
+  Given the betslip is open
+  And the numeric keypad is displayed
+  When the user taps the stake field
+  Then the keypad should remain visible
+  And the betslip should scroll/adjust to ensure the keypad is fully in view
 
 
 Scenario: Open keypad on stake input focus
