@@ -58,7 +58,7 @@
 * **Unrelated Workstreams:** My Bets / Open Bets, Oasis live bet tracking, cash-out pebbles, and token modals. 
 * **Desktop & Web Views:** Physical keyboard events or desktop browser popovers. 
 * **Alphanumeric Inputs:** Promo codes, search bars, or free-form text fields.
-* **Native-grade decimal handling (max 2 d.p.)
+* Native-grade decimal handling (max 2 d.p.)
 
 ---
 
