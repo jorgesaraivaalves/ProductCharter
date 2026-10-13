@@ -27,7 +27,7 @@
 ### 3.1 Primary Objectives
 * **Standardized Ergonomics:** Deploy a standard 3×4 numerical grid with enlarged, thumb-friendly touch targets
 * **Input Fluidity:** Deliver sub-50ms render latency with zero viewport jumping and seamless keyboard avoidance
-* **Domain Ergonomics:** Provide native-grade decimal handling (max 2 d.p.), hold-to-clear backspace, and integrated quick-stake chips (+£5, +£10, +£20)
+* **Domain Ergonomics:** Provide hold-to-clear backspace, and integrated quick-stake chips (+£5, +£10, +£20)
 
 ### 3.2 Success Metrics & KPIs
 * **Stake Entry Speed:** Measurable reduction in time-to-enter-stake and overall time-to-place-bet
@@ -46,6 +46,8 @@
  * Backspace handling: Single tap (delete last char) and Long press (>= 900ms to clear all)
  * Numeric stake input accepts leading decimals (e.g., `.223`) without auto-prefixing `0.`
  * `0.` prefix is added during stake field validation (on blur); manual `0.` entry is also supported.
+ * Keypad accepts all numeric input; validation to enforce max 2 decimal places occurs on stake field blur.
+
 * **Surface Coverage:**  
  * Quick Bet / Single Bet modal bottom sheet
  * Standard Multi-Leg / Full Betslip view. 
@@ -56,6 +58,7 @@
 * **Unrelated Workstreams:** My Bets / Open Bets, Oasis live bet tracking, cash-out pebbles, and token modals. 
 * **Desktop & Web Views:** Physical keyboard events or desktop browser popovers. 
 * **Alphanumeric Inputs:** Promo codes, search bars, or free-form text fields.
+* **Native-grade decimal handling (max 2 d.p.)
 
 ---
 
