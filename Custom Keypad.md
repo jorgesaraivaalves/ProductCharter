@@ -42,9 +42,10 @@
  * Migration to 4 rows × 3 columns (`1–9`, `.` bottom-left, `0` bottom-center, `⌫` bottom-right).
  * Maintained horizontal quick-stake preset chips directly above the numeric grid. 
 * **Input State & Validation Logic:**  
- * Real-time numeric stake updates with auto-prefixing `0.` for leading decimals.   
  * Prevention of duplicate decimal points
- * Backspace handling: Single tap (delete last char) and Long press (>= 800ms to clear all)
+ * Backspace handling: Single tap (delete last char) and Long press (>= 900ms to clear all)
+ * Numeric stake input accepts leading decimals (e.g., `.223`) without auto-prefixing `0.`
+ * `0.` prefix is added during stake field validation (on blur); manual `0.` entry is also supported.
 * **Surface Coverage:**  
  * Quick Bet / Single Bet modal bottom sheet
  * Standard Multi-Leg / Full Betslip view. 
@@ -54,7 +55,7 @@
 * **Odds Calculation & Return Models:** Multiplier calculations, accumulator rules, or pricing models. 
 * **Unrelated Workstreams:** My Bets / Open Bets, Oasis live bet tracking, cash-out pebbles, and token modals. 
 * **Desktop & Web Views:** Physical keyboard events or desktop browser popovers. 
-* **Alphanumeric Inputs:** Promo codes, search bars, or free-form text fields. 
+* **Alphanumeric Inputs:** Promo codes, search bars, or free-form text fields.
 
 ---
 
