@@ -1,1 +1,3 @@
 
+[PRD/Charter]: Native / Custom Keypad
+ | Metadata | Value | | :--- | :--- | | Product Owner | Jorge Alves | Simon Burton | | Tech Lead | Ricardo Pereira | Gabriel Pires | | Target Branch / Dir| src/features/[feature-name]/ or src/components/[scope]/ | Platforms | iOS & Android (React Native / Native App Container) | | Tracking Ticket | SSTDBT-63 | | Document Version | '1.0.0' | | Status | [Draft] |  
