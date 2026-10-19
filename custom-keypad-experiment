@@ -36,8 +36,8 @@ Migrating to a standardized 3×4 numeric grid (with enlarged touch targets) comb
 | :--- | :--- | :--- | :--- |
 | **Keypad Grid** | Legacy 2 Rows × 6 Columns | **Standard 4 Rows × 3 Columns** | **Standard 4 Rows × 3 Columns** |
 | **Touch Target Width** | ~50px (cramped) | **~100px+ (Thumb Zone)** | **~100px+ (Thumb Zone)** |
-| **CTA Placement** | Pinned to bottom of betslip container | Pinned to bottom of betslip container | Pinned to top of betslip container (above the quick stake) |
-| **Quick Stake Chips** | Horizontal bar above keypad | Horizontal bar above keypad  | Horizontal bar above keypad  |
+| **CTA Placement** | Pinned to bottom of betslip container |  Pinned to top of betslip container (above the quick stake) |Pinned to bottom of betslip container |
+| **Quick Stake Chips** | Horizontal bar above keypad |  Horizontal bar above keypad  | Horizontal bar above keypad  |
 
 ---
 
@@ -104,27 +104,34 @@ TBR -> | **Touch Target Width** | ~50px (Cramped) | **~100px+ (Standard Thumb Zo
 
 Feature: Native Custom Keypad and CTA Layout Experiment
 
+
+
   Background:
-    Given the betslip is active with 1 single selection
+    Given the betslip is active with 1 single selection or multiple selections
     And the stake input field is currently empty
+
+    BetSummary container includes `Balance after bet` label and value and `Potential Returns` label and value 
+    Actions container includes Place Bet button and Trash button
+    TermsContainer includes a label with ´Bets are accepted in accordance with´
 
   # -----------------------------------------------------------
   # EXPERIMENT ROUTING & LAYOUT RENDERING
   # -----------------------------------------------------------
 
-  Scenario: Variant A displays Place Bet CTA above numeric grid
+  Scenario: Variant A displays Place Bet CTA above numeric grid (keypad and quick stake)
     Given the experiment flag "exp_betslip_keypad_cta_layout" is evaluated as "cta_above"
     When the user taps the stake field to focus
     Then the numeric keypad should display using the 3x4 grid layout
-    And the "Place Bet" CTA button should be positioned above the numeric grid
-    And the quick-stake chips should be positioned above the "Place Bet" CTA
+    and the TermsContainer should remain pinned to the bottom of the betslip container
+    And the Actions container should be positioned above the quick stake
+    and the BetSummary container should be positioned above the Actions container
     And an analytics event "betslip_opened" should emit with variant "cta_above"
 
-  Scenario: Variant B displays Place Bet CTA below numeric grid
+  Scenario: Variant B displays Place Bet CTA below numeric grid with bottom sticky CTA
     Given the experiment flag "exp_betslip_keypad_cta_layout" is evaluated as "cta_below"
     When the user taps the stake field to focus
     Then the numeric keypad should display using the 3x4 grid layout
-    And the "Place Bet" CTA button should be positioned directly below the numeric grid
+    And the Actions container and BetSummary container and TermsContainer should be positioned directly below the numeric grid
     And the quick-stake chips should remain positioned directly above the numeric grid
     And an analytics event "betslip_opened" should emit with variant "cta_below"
 
@@ -132,8 +139,16 @@ Feature: Native Custom Keypad and CTA Layout Experiment
     Given the experiment flag "exp_betslip_keypad_cta_layout" is evaluated as "control"
     When the user taps the stake field to focus
     Then the numeric keypad should display using the legacy 6x2 grid layout
-    And the "Place Bet" CTA button should remain pinned to the bottom of the betslip container
+    And the Actions container and BetSummary container and TermsContainer should remain pinned to the bottom of the betslip container
     And an analytics event "betslip_opened" should emit with variant "control"
+
+
+  Scenario: Tapping outside the stake field dismisses keypad
+    Given the experiment flag "exp_betslip_keypad_cta_layout" is evaluated as "control" or experiment flag "exp_betslip_keypad_cta_layout" is evaluated as "cta_below" or experiment flag "exp_betslip_keypad_cta_layout" is evaluated as "cta_above"
+    When the user taps outside the stake input field
+    Then the stake field should lose focus
+    And the numeric keypad should be hidden and both BetSummary container and Actions container and TermsContainer stay visible and pinned to the betslip
+      
 
   # -----------------------------------------------------------
   # NUMERIC INPUT & DECIMAL RULES
