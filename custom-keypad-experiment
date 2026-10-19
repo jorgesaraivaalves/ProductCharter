@@ -1,0 +1,196 @@
+# [PRD/Charter]: Native / Custom Keypad & CTA Placement Experiment
+
+| Metadata | Value |
+| :--- | :--- |
+| **Product Owner** | Jorge Alves |
+| **Tech Lead** | Ricardo Pereira | Gabriel Pires |
+| **Target Branch / Dir** | `src/features/betslip/keypad/` |
+| **Platforms** | iOS & Android (React Native / Native App Container) |
+| **Tracking Ticket** | SSTDBT-63 |
+| **Experiment Flag** | `exp_betslip_keypad_cta_layout` |
+| **Document Version** | 2.2.0 |
+| **Status** | Approved for Execution / Ready for Agent Scaffolding |
+
+---
+
+## 1. Problem Statement & User Friction
+
+### 1.1 User Friction
+* **Unnatural 6×2 Keypad Layout:** The legacy layout spans digits across two wide rows of six columns (`1–5 + ⌫` and `6–0 + .`), breaking universal mobile ergonomic conventions and forcing visual searching.
+* **Narrow Touch Targets & High Error Rate:** Six columns across mobile screen widths result in cramped touch targets (~50px), driving accidental mis-taps, unintended deletions, and decimal errors during in-play betting.
+* **Action Key Clutter:** Top-right placement of the backspace key and non-standard decimal positioning increase cognitive friction and stake correction time.
+
+### 1.2 Business Inefficiency
+* **Betslip Abandonment:** Slow stake entry causes customers to miss fast-moving in-play odds or abandon betslips entirely.
+* **Conversion Drop-off:** Distance between the keypad and the submission CTA ("Place Bet") introduces thumb repositioning latency, directly hurting final funnel conversion.
+
+---
+
+## 2. Hypothesis & Experiment Matrix
+
+### 2.1 Experiment Hypothesis
+Migrating to a standardized 3×4 numeric grid (with enlarged touch targets) combined with bringing the "Place Bet" CTA closer to the natural thumb strike zone will reduce stake entry and correction time, driving a statistically significant uplift in **Betslip Conversion Rate** (`betslip_conversion_rate`) without increasing accidental bet placements.
+
+### 2.2 Variant Definitions (`exp_betslip_keypad_cta_layout`)
+| Dimension | Control Group | Variant A (`cta_above`) | Variant B (`cta_below`) |
+| :--- | :--- | :--- | :--- |
+| **Keypad Grid** | Legacy 2 Rows × 6 Columns | **Standard 4 Rows × 3 Columns** | **Standard 4 Rows × 3 Columns** |
+| **Touch Target Width** | ~50px (cramped) | **~100px+ (Thumb Zone)** | **~100px+ (Thumb Zone)** |
+| **CTA Placement** | Pinned to bottom of betslip container | Pinned to bottom of betslip container | Pinned to top of betslip container (above the quick stake) |
+| **Quick Stake Chips** | Horizontal bar above keypad | Horizontal bar above keypad  | Horizontal bar above keypad  |
+
+---
+
+## 3. Success Metrics & Experiment Guardrails
+
+### 3.1 Primary Metric: Betslip Conversion Rate
+* **Core Definition:** $\text{Conversion Rate} = \frac{\text{Unique Sessions with Confirmed Bet Placed}}{\text{Unique Sessions with Betslip Opened}} \times 100$
+* **Success Criterion:** Statistically significant ($p < 0.05$, 95% confidence interval) uplift in confirmed bet placements for either Variant A or Variant B compared to Control.
+
+### 3.2 Secondary Metrics
+* **Stake Entry & Placement Speed:** Measurable reduction in elapsed time from stake input focus to pressing "Place Bet".
+* **Correction Frequency:** Reduction of single backspace taps and long-press clears ($\ge 900$ms) per completed bet.
+* **In-Play Acceptance Rate:** Percentage of placed bets accepted without odds-change rejections or market suspensions.
+
+### 3.3 Guardrails
+* **Immediate Cash-Out Rate:** Cash-outs initiated within 10 seconds of bet confirmation must not increase by $>0.5\%$ (guards against accidental bet placements caused by CTA proximity).
+* **Abandonment Rate:** No increase in abandonment after entering the first digit or selecting a quick-stake chip.
+
+---
+
+## 4. Scope & Boundary Definition
+
+### 4.1 In Scope
+* **UI & Grid Restructuring:**
+  * Implementation of the 4 rows × 3 columns grid (`1–9`, `.` bottom-left, `0` bottom-center, `⌫` bottom-right) for Variants A and B.
+  * Horizontal quick-stake preset chips (+€5, +€10, +€20 or local equivalent).
+  * Support for dynamic CTA placement (Variant A: above grid; Variant B: below grid).
+* **Input State & Validation Logic:**
+  * Prevention of duplicate decimal points.
+  * Backspace handling: Single tap deletes last character; long-press ($\ge 900$ms) clears the field entirely.
+  * Leading decimal entry allowed (e.g., `.50` formatted to `0.50` on blur).
+  * Strict enforcement of a maximum of 2 decimal places.
+  * Stake field character limit of 9 digits with rapid-tap debounce.
+* **Focus & Viewport Handling:**
+  * Keypad animates up from the bottom when the stake field receives focus.
+  * Viewport adjusts to ensure stake input, potential returns, and CTA remain visible.
+  * Keypad dismissed when tapping outside the stake input field.
+* **Surface Coverage:**
+  * Quick Bet / Single Bet modal bottom sheet.
+  * Standard Multi-Leg / Full Betslip view.
+
+### 4.2 Out of Scope
+* Downstream Bet Placement Services (BPS), pricing feeds, or wallet balance APIs.
+* Odds calculation algorithms, accumulator rules, or financial return models.
+* Desktop/web physical keyboard events or browser popovers.
+* My Bets / Open Bets, Oasis live tracking, and promotional token modals.
+
+---
+
+Feature: Native Custom Keypad and CTA Layout Experiment
+
+  Background:
+    Given the betslip is active with 1 single selection
+    And the stake input field is currently empty
+
+  # -----------------------------------------------------------
+  # EXPERIMENT ROUTING & LAYOUT RENDERING
+  # -----------------------------------------------------------
+
+  Scenario: Variant A displays Place Bet CTA above numeric grid
+    Given the experiment flag "exp_betslip_keypad_cta_layout" is evaluated as "cta_above"
+    When the user taps the stake field to focus
+    Then the numeric keypad should display using the 3x4 grid layout
+    And the "Place Bet" CTA button should be positioned above the numeric grid
+    And the quick-stake chips should be positioned above the "Place Bet" CTA
+    And an analytics event "betslip_opened" should emit with variant "cta_above"
+
+  Scenario: Variant B displays Place Bet CTA below numeric grid
+    Given the experiment flag "exp_betslip_keypad_cta_layout" is evaluated as "cta_below"
+    When the user taps the stake field to focus
+    Then the numeric keypad should display using the 3x4 grid layout
+    And the "Place Bet" CTA button should be positioned directly below the numeric grid
+    And the quick-stake chips should remain positioned directly above the numeric grid
+    And an analytics event "betslip_opened" should emit with variant "cta_below"
+
+  Scenario: Control group displays legacy 6x2 grid with bottom sticky CTA
+    Given the experiment flag "exp_betslip_keypad_cta_layout" is evaluated as "control"
+    When the user taps the stake field to focus
+    Then the numeric keypad should display using the legacy 6x2 grid layout
+    And the "Place Bet" CTA button should remain pinned to the bottom of the betslip container
+    And an analytics event "betslip_opened" should emit with variant "control"
+
+  # -----------------------------------------------------------
+  # NUMERIC INPUT & DECIMAL RULES
+  # -----------------------------------------------------------
+
+  Scenario Outline: Valid stake entry on standard 3x4 numeric grid
+    Given the experiment flag is active for a 3x4 variant
+    When the user taps the sequence "<input>" on the keypad
+    Then the stake field should display "<output>"
+    And the potential returns should update based on "<output>"
+    And the "Place Bet" CTA should be enabled
+    Examples:
+      | input   | output |
+      | 1,0     | 10     |
+      | 5,.,5   | 5.5    |
+      | .,7,5   | 0.75   |
+      | 0,5     | 5      |
+
+  Scenario: Strict enforcement of maximum two decimal places
+    Given the experiment flag is active for a 3x4 variant
+    And the stake field currently displays "10.55"
+    When the user taps "5" on the keypad
+    Then the stake field should remain "10.55"
+    And no further digits should be appended
+
+  Scenario: Duplicate decimal point prevention
+    Given the stake field currently displays "5."
+    When the user taps "." on the keypad
+    Then the stake field should remain "5."
+
+  # -----------------------------------------------------------
+  # CORRECTION, CLEAR & QUICK-STAKES
+  # -----------------------------------------------------------
+
+  Scenario: Single tap backspace deletes last character
+    Given the stake field currently displays "125"
+    When the user taps the "⌫" key once
+    Then the stake field should display "12"
+    And an analytics event "stake_cleared" should emit with source "single_tap"
+
+  Scenario: Long press backspace clears entire stake
+    Given the stake field currently displays "125"
+    When the user performs a long-press (>= 900ms) on the "⌫" key
+    Then the stake field should be cleared to empty
+    And the "Place Bet" button should transition to disabled
+    And an analytics event "stake_cleared" should emit with source "long_press"
+
+  Scenario: Quick-stake chip increments existing stake value
+    Given the stake field currently displays "5"
+    When the user taps the "+10" quick-stake chip
+    Then the stake field should display "15"
+    And an analytics event "quick_stake_selected" should emit with keyLabel "+10"
+
+  # -----------------------------------------------------------
+  # FOCUS, VIEWPORT & SUSPENSION
+  # -----------------------------------------------------------
+
+  Scenario: Tapping outside the stake field dismisses keypad
+    Given the betslip is open and the keypad is displayed
+    When the user taps outside the stake input field
+    Then the stake field should lose focus
+    And the numeric keypad should be hidden
+
+  Scenario: Market suspension locks submission across all variants
+    Given the user is entering a stake on the keypad
+    When the underlying market transitions to "Suspended"
+    Then the keypad should remain visible and interactive for stake editing
+    But the "Place Bet" CTA button must be disabled with label "Market Suspended"
+
+  Scenario: Triggering valid bet submission emits conversion telemetry
+    Given the stake field contains valid input "10.00"
+    And the "Place Bet" CTA is enabled
+    When the user taps the "Place Bet" button
+    Then an analytics event "place_bet_triggered" should emit with stakeValue "10.00"
+
