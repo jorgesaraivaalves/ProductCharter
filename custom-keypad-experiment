@@ -87,6 +87,21 @@ Migrating to a standardized 3×4 numeric grid (with enlarged touch targets) comb
 
 ---
 
+## 5. UI Architecture & Layout Comparison
+ | Element | Legacy Implementation (6×2) | New Standard Implementation (3×4) | 
+| :--- | :--- | :--- | 
+| **Grid Dimensions** | 2 Rows × 6 Columns | **4 Rows × 3 Columns** | 
+| **Row 1** | `1`, `2`, `3`, `4`, `5`, `⌫` | `1`, `2`, `3` | 
+| **Row 2** | `6`, `7`, `8`, `9`, `0`, `.` | `4`, `5`, `6` | 
+| **Row 3** | — | `7`, `8`, `9` | 
+| **Row 4** | — | `.` (Left), `0` (Center), `⌫` (Right) | 
+TBR -> | **Touch Target Width** | ~50px (Cramped) | **~100px+ (Standard Thumb Zone)** | 
+
+---  
+
+## 6. Executable Acceptance Criteria / Gherkin Acceptance Scenarios
+ ```gherkin
+
 Feature: Native Custom Keypad and CTA Layout Experiment
 
   Background:
